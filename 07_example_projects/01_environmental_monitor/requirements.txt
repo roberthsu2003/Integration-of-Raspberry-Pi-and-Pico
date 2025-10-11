@@ -1,0 +1,5 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+paho-mqtt==1.6.1
+pymongo==4.6.0
+python-dotenv==1.0.0

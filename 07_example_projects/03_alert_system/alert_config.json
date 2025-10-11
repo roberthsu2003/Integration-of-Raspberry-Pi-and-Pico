@@ -1,0 +1,52 @@
+{
+  "mqtt": {
+    "broker": "localhost",
+    "port": 1883,
+    "topic": "sensors/#"
+  },
+  "database": {
+    "uri": "mongodb://admin:password123@localhost:27017/",
+    "db": "iot_data",
+    "collection": "alerts"
+  },
+  "notifications": {
+    "terminal": true,
+    "log_file": true,
+    "mqtt": true,
+    "email": false
+  },
+  "rules": [
+    {
+      "name": "high_temperature",
+      "condition": "value > 30",
+      "sensor_type": "temperature",
+      "severity": "warning",
+      "message": "溫度過高: {value}°C",
+      "cooldown": 300
+    },
+    {
+      "name": "low_temperature",
+      "condition": "value < 15",
+      "sensor_type": "temperature",
+      "severity": "warning",
+      "message": "溫度過低: {value}°C",
+      "cooldown": 300
+    },
+    {
+      "name": "critical_temperature",
+      "condition": "value > 35",
+      "sensor_type": "temperature",
+      "severity": "critical",
+      "message": "溫度嚴重過高: {value}°C",
+      "cooldown": 60
+    },
+    {
+      "name": "rapid_temperature_change",
+      "condition": "change_rate > 5",
+      "sensor_type": "temperature",
+      "severity": "warning",
+      "message": "溫度變化過快: {change_rate:.2f}°C/小時",
+      "cooldown": 600
+    }
+  ]
+}

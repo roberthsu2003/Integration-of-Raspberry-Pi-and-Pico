@@ -1,0 +1,31 @@
+{
+  "mqtt": {
+    "broker": "localhost",
+    "port": 1883,
+    "sensor_topic": "sensors/#",
+    "control_topic": "control/{device_id}"
+  },
+  "rules": [
+    {
+      "name": "auto_cooling",
+      "condition": "temperature > 28",
+      "action": "fan_on",
+      "description": "溫度過高時開啟風扇（LED 模擬）",
+      "cooldown": 300
+    },
+    {
+      "name": "auto_heating",
+      "condition": "temperature < 20",
+      "action": "heater_on",
+      "description": "溫度過低時開啟加熱器（LED 閃爍模擬）",
+      "cooldown": 300
+    },
+    {
+      "name": "normal_mode",
+      "condition": "temperature >= 20 and temperature <= 28",
+      "action": "all_off",
+      "description": "溫度正常時關閉所有設備",
+      "cooldown": 60
+    }
+  ]
+}

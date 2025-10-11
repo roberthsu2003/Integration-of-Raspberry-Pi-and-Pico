@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>感測器儀表板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 20px; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; }
+        .stat-label { font-size: 14px; opacity: 0.9; }
+        .stat-value { font-size: 32px; font-weight: bold; margin-top: 5px; }
+        select { padding: 10px; border-radius: 4px; border: 1px solid #ddd; font-size: 14px; }
+        .chart-container { position: relative; height: 400px; }
+        .update-time { color: #666; font-size: 12px; text-align: right; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌡️ 感測器儀表板</h1>
+        
+        <div class="card">
+            <label>選擇裝置：</label>
+            <select id="deviceSelect" onchange="changeDevice()">
+                <option value="pico_001">Pico 001</option>
+            </select>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-box">
+                <div class="stat-label">當前溫度</div>
+                <div class="stat-value" id="currentTemp">--</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">平均溫度</div>
+                <div class="stat-value" id="avgTemp">--</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">最高溫度</div>
+                <div class="stat-value" id="maxTemp">--</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">最低溫度</div>
+                <div class="stat-value" id="minTemp">--</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>溫度趨勢圖</h2>
+            <div class="chart-container">
+                <canvas id="tempChart"></canvas>
+            </div>
+            <div class="update-time" id="updateTime">最後更新：--</div>
+        </div>
+    </div>
+
+    <script>
+        const UPDATE_INTERVAL = 5000; // 5 秒更新一次
+        let currentDevice = 'pico_001';
+        let chart = null;
+
+        // 初始化圖表
+        function initChart() {
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '溫度 (°C)',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: false }
+                    }
+                }
+            });
+        }
+
+        // 更新資料
+        async function updateData() {
+            try {
+                // 取得最新資料
+                const latestRes = await fetch(`/api/latest?device_id=${currentDevice}`);
+                const latestData = await latestRes.json();
+                
+                if (latestData.data) {
+                    document.getElementById('currentTemp').textContent = 
+                        latestData.data.value.toFixed(1) + '°C';
+                }
+
+                // 取得圖表資料
+                const chartRes = await fetch(`/api/chart?device_id=${currentDevice}&hours=6`);
+                const chartData = await chartRes.json();
+                
+                if (chartData.labels && chartData.values) {
+                    // 格式化時間標籤
+                    const labels = chartData.labels.map(t => {
+                        const date = new Date(t);
+                        return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+                    });
+                    
+                    chart.data.labels = labels;
+                    chart.data.datasets[0].data = chartData.values;
+                    chart.update();
+
+                    // 計算統計
+                    const values = chartData.values;
+                    if (values.length > 0) {
+                        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+                        const max = Math.max(...values);
+                        const min = Math.min(...values);
+                        
+                        document.getElementById('avgTemp').textContent = avg.toFixed(1) + '°C';
+                        document.getElementById('maxTemp').textContent = max.toFixed(1) + '°C';
+                        document.getElementById('minTemp').textContent = min.toFixed(1) + '°C';
+                    }
+                }
+
+                // 更新時間
+                document.getElementById('updateTime').textContent = 
+                    '最後更新：' + new Date().toLocaleTimeString('zh-TW');
+                    
+            } catch (error) {
+                console.error('更新資料失敗:', error);
+            }
+        }
+
+        // 載入裝置列表
+        async function loadDevices() {
+            try {
+                const res = await fetch('/api/devices');
+                const data = await res.json();
+                
+                if (data.devices) {
+                    const select = document.getElementById('deviceSelect');
+                    select.innerHTML = '';
+                    data.devices.forEach(device => {
+                        const option = document.createElement('option');
+                        option.value = device;
+                        option.textContent = device;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('載入裝置列表失敗:', error);
+            }
+        }
+
+        // 切換裝置
+        function changeDevice() {
+            currentDevice = document.getElementById('deviceSelect').value;
+            updateData();
+        }
+
+        // 初始化
+        initChart();
+        loadDevices();
+        updateData();
+        setInterval(updateData, UPDATE_INTERVAL);
+    </script>
+</body>
+</html>

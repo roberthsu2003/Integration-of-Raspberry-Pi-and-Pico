@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多裝置監控儀表板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .card .value {
+            font-size: 3em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .card .label {
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .status-online {
+            color: #10b981;
+        }
+        
+        .status-offline {
+            color: #ef4444;
+        }
+        
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .device-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .device-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .status-badge.online {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-badge.offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .device-info {
+            color: #666;
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+        
+        .device-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 15px 0;
+        }
+        
+        .refresh-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto 30px;
+        }
+        
+        .refresh-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+        }
+        
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+            margin: 50px 0;
+        }
+        
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .last-update {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌡️ 多裝置監控儀表板</h1>
+        
+        <button class="refresh-btn" onclick="loadDashboard()">🔄 重新整理</button>
+        
+        <div id="summary" class="summary-cards"></div>
+        <div id="devices" class="devices-grid"></div>
+        <div id="lastUpdate" class="last-update"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8001';
+        
+        async function loadDashboard() {
+            try {
+                // 顯示載入中
+                document.getElementById('summary').innerHTML = '<div class="loading">載入中...</div>';
+                document.getElementById('devices').innerHTML = '';
+                
+                // 取得儀表板摘要
+                const summaryResponse = await fetch(`${API_URL}/api/dashboard`);
+                const summaryData = await summaryResponse.json();
+                
+                // 顯示摘要卡片
+                displaySummary(summaryData);
+                
+                // 取得所有裝置
+                const devicesResponse = await fetch(`${API_URL}/api/devices`);
+                const devicesData = await devicesResponse.json();
+                
+                // 顯示裝置卡片
+                displayDevices(devicesData.devices);
+                
+                // 更新時間
+                document.getElementById('lastUpdate').innerHTML = 
+                    `最後更新: ${new Date().toLocaleString('zh-TW')}`;
+                
+            } catch (error) {
+                console.error('載入失敗:', error);
+                document.getElementById('summary').innerHTML = 
+                    `<div class="error">❌ 無法連接到 API 伺服器<br>請確認伺服器是否正在執行</div>`;
+            }
+        }
+        
+        function displaySummary(data) {
+            const summaryHTML = `
+                <div class="card">
+                    <h3>總裝置數</h3>
+                    <div class="value">${data.total_devices}</div>
+                    <div class="label">已註冊裝置</div>
+                </div>
+                <div class="card">
+                    <h3>線上裝置</h3>
+                    <div class="value status-online">${data.online_devices}</div>
+                    <div class="label">正常運作中</div>
+                </div>
+                <div class="card">
+                    <h3>離線裝置</h3>
+                    <div class="value status-offline">${data.offline_devices}</div>
+                    <div class="label">需要檢查</div>
+                </div>
+                <div class="card">
+                    <h3>24小時讀數</h3>
+                    <div class="value">${data.total_readings_24h}</div>
+                    <div class="label">資料筆數</div>
+                </div>
+            `;
+            
+            document.getElementById('summary').innerHTML = summaryHTML;
+        }
+        
+        function displayDevices(devices) {
+            if (devices.length === 0) {
+                document.getElementById('devices').innerHTML = 
+                    '<div class="card"><p>目前沒有裝置</p></div>';
+                return;
+            }
+            
+            const devicesHTML = devices.map(device => {
+                const statusClass = device.status === 'online' ? 'online' : 'offline';
+                const lastSeen = device.last_seen ? 
+                    new Date(device.last_seen).toLocaleString('zh-TW') : 
+                    '從未上線';
+                
+                return `
+                    <div class="device-card">
+                        <div class="device-header">
+                            <div class="device-name">${device.device_name}</div>
+                            <div class="status-badge ${statusClass}">
+                                ${device.status === 'online' ? '🟢 線上' : '🔴 離線'}
+                            </div>
+                        </div>
+                        <div class="device-info">📍 位置: ${device.location}</div>
+                        <div class="device-info">🆔 ID: ${device.device_id}</div>
+                        <div class="device-info">📊 總讀數: ${device.total_readings}</div>
+                        <div class="device-info">🕐 最後上線: ${lastSeen}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('devices').innerHTML = devicesHTML;
+        }
+        
+        // 頁面載入時自動載入資料
+        loadDashboard();
+        
+        // 每 30 秒自動重新整理
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>
