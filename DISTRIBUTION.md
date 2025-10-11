@@ -13,14 +13,14 @@ pi-pico-integration-course/
 ├── LICENSE                      # 授權條款
 ├── CONTRIBUTING.md              # 貢獻指南
 ├── CHANGELOG.md                 # 更新日誌
-├── 01_pico_basics/              # Day 1-2 內容
-├── 02_pi_basics/                # Day 3 內容
-├── 03_mqtt_communication/       # Day 4-5 內容
-├── 04_uart_usb/                 # Day 5 內容
-├── 05_integration/              # Day 6 內容
-├── 06_multi_device/             # Day 7 內容
-├── 07_example_projects/         # Day 8 內容
-├── 08_final_project/            # Day 9 內容
+├── 01_pico_basics/              # Pico 基礎模組
+├── 02_pi_basics/                # Pi 基礎模組
+├── 03_mqtt_communication/       # MQTT 通訊模組
+├── 04_uart_usb/                 # UART/USB 通訊模組
+├── 05_integration/              # 整合應用模組
+├── 06_multi_device/             # 多裝置管理模組
+├── 07_example_projects/         # 範例專案
+├── 08_final_project/            # 綜合專題模組
 ├── tools/                       # 輔助工具
 └── resources/                   # 學習資源
 ```
@@ -375,5 +375,4 @@ git checkout -b class-2025-spring
 
 ---
 
-**最後更新：** 2025-10-11
 **版本：** 1.0.0

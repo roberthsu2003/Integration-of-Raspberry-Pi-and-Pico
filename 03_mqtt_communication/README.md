@@ -4,26 +4,26 @@
 
 ## 模組概覽
 
-本模組涵蓋 Day 4-5 的課程內容，包含四個主要單元：
+本模組包含四個主要單元：
 
 ### 📚 學習單元
 
-1. **[MQTT Broker](mqtt_broker/README.md)** - Day 4 上午
+1. **[MQTT Broker](mqtt_broker/README.md)**
    - MQTT 基本概念
    - Mosquitto Broker 設定
    - 測試和驗證
 
-2. **[Pico 發布者](pico_publisher/README.md)** - Day 4 下午
+2. **[Pico 發布者](pico_publisher/README.md)**
    - WiFi 連接管理
    - MQTT 客戶端實作
    - 感測器資料發布
 
-3. **[Pi 訂閱者](pi_subscriber/README.md)** - Day 5 上午
+3. **[Pi 訂閱者](pi_subscriber/README.md)**
    - MQTT 訂閱實作
    - 資料處理和驗證
    - 資料庫整合
 
-4. **[測試工具](mqtt_test_tools/README.md)** - Day 5 下午
+4. **[測試工具](mqtt_test_tools/README.md)**
    - 訊息監控工具
    - 測試發布工具
    - 除錯技巧

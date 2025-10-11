@@ -1,4 +1,4 @@
-# Day 7：多裝置管理模組
+# 多裝置管理模組
 
 學習如何管理多個 Pico 裝置，實現並發資料收集、狀態監控和資料視覺化。
 
@@ -132,7 +132,7 @@ API 會在 `http://localhost:8001` 啟動。
 ```bash
 curl http://localhost:8001/api/dashboard
 ```
-回傳：總裝置數、線上/離線數量、24小時讀數統計
+回傳：總裝置數、線上/離線數量、讀數統計
 
 #### 2. 裝置列表
 ```bash
@@ -148,22 +148,22 @@ curl http://localhost:8001/api/devices/pico_001
 
 #### 4. 裝置比較
 ```bash
-curl "http://localhost:8001/api/comparison?device_ids=pico_001,pico_002,pico_003&hours=24"
+curl "http://localhost:8001/api/comparison?device_ids=pico_001,pico_002,pico_003&hours=1"
 ```
 回傳：多個裝置的資料比較（平均值、最大值、最小值）
 
 #### 5. 統計資訊
 ```bash
 # 所有裝置的統計
-curl "http://localhost:8001/api/statistics?hours=24"
+curl "http://localhost:8001/api/statistics?hours=1"
 
 # 特定裝置的統計
-curl "http://localhost:8001/api/statistics?device_id=pico_001&hours=24"
+curl "http://localhost:8001/api/statistics?device_id=pico_001&hours=1"
 ```
 
 #### 6. 時間序列資料
 ```bash
-curl "http://localhost:8001/api/timeseries?device_id=pico_001&hours=24&interval_minutes=60"
+curl "http://localhost:8001/api/timeseries?device_id=pico_001&hours=1&interval_minutes=10"
 ```
 回傳：用於繪製圖表的時間序列資料
 
@@ -232,7 +232,7 @@ response = requests.get(
     "http://localhost:8001/api/comparison",
     params={
         "device_ids": "pico_001,pico_002,pico_003",
-        "hours": 24
+        "hours": 1
     }
 )
 
@@ -265,7 +265,7 @@ values = [d['value'] for d in data['data_points']]
 # 繪製圖表
 plt.figure(figsize=(12, 6))
 plt.plot(timestamps, values, marker='o')
-plt.title('24 小時溫度變化')
+plt.title('溫度變化趨勢')
 plt.xlabel('時間')
 plt.ylabel('溫度 (°C)')
 plt.grid(True)

@@ -4,7 +4,7 @@
 
 ## 模組概覽
 
-本模組涵蓋 Day 3 的課程內容，學習如何：
+本模組學習如何：
 - 使用 Docker 部署 MongoDB 資料庫
 - 建立 FastAPI RESTful API 服務
 - 實作資料庫 CRUD 操作
