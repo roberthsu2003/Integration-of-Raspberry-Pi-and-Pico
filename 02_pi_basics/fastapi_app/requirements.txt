@@ -1,0 +1,15 @@
+# FastAPI 和相關套件
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# MongoDB 驅動程式
+pymongo==4.6.0
+
+# MQTT 客戶端（後續使用）
+paho-mqtt==1.6.1
+
+# 其他工具
+python-dotenv==1.0.0
+requests==2.31.0

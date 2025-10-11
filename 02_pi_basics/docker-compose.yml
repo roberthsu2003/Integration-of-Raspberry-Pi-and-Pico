@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # MongoDB 資料庫服務
+  mongodb:
+    image: mongo:latest
+    container_name: iot_mongodb
+    restart: unless-stopped
+    
+    # 連接埠對應
+    ports:
+      - "27017:27017"
+    
+    # 環境變數設定
+    environment:
+      # 設定管理員帳號密碼
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      # 設定預設資料庫
+      MONGO_INITDB_DATABASE: iot_data
+    
+    # 資料持久化
+    volumes:
+      # 將資料儲存到本地目錄
+      - ./mongodb_data:/data/db
+      # 初始化腳本（選用）
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    
+    # 網路設定
+    networks:
+      - iot_network
+    
+    # 健康檢查
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Mongo Express - MongoDB 網頁管理介面（選用）
+  mongo-express:
+    image: mongo-express:latest
+    container_name: iot_mongo_express
+    restart: unless-stopped
+    
+    # 連接埠對應
+    ports:
+      - "8081:8081"
+    
+    # 環境變數設定
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password123
+      ME_CONFIG_MONGODB_URL: mongodb://admin:password123@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    
+    # 依賴 MongoDB 服務
+    depends_on:
+      - mongodb
+    
+    # 網路設定
+    networks:
+      - iot_network
+
+# 網路定義
+networks:
+  iot_network:
+    driver: bridge
