@@ -63,7 +63,7 @@
     - 提供 MongoDB 操作範例
     - _Requirements: 2.5, 7.2, 9.2_
 
-- [-] 4. 實作 MQTT 通訊模組（Day 4-5）
+- [x] 4. 實作 MQTT 通訊模組（Day 4-5）
   - [x] 4.1 建立 MQTT Broker 設定
     - 撰寫 Mosquitto 安裝腳本
     - 建立 mosquitto.conf 配置檔
@@ -94,7 +94,7 @@
     - 提供除錯指南
     - _Requirements: 3.5, 9.2_
   
-  - [-] 4.6 建立模組文件和練習
+  - [x] 4.6 建立模組文件和練習
     - 說明 MQTT 基本概念
     - 提供完整的設定步驟
     - 設計訂閱發布練習題
