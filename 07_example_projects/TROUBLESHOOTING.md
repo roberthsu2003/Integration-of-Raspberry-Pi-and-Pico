@@ -348,20 +348,313 @@ print(wlan.ifconfig())
 
 ---
 
+---
+
+## 效能優化建議
+
+### MongoDB 效能優化
+
+**建立索引：**
+```javascript
+// 在 MongoDB shell 中執行
+use iot_data
+db.sensor_logs.createIndex({"device_id": 1, "timestamp": -1})
+db.control_history.createIndex({"device_id": 1, "timestamp": -1})
+db.alerts.createIndex({"timestamp": -1})
+```
+
+**定期清理舊資料：**
+```javascript
+// 刪除 30 天前的資料
+db.sensor_logs.deleteMany({
+  "timestamp": {
+    $lt: new Date(Date.now() - 30*24*60*60*1000).toISOString()
+  }
+})
+```
+
+### MQTT 效能優化
+
+**調整 QoS 等級：**
+```python
+# QoS 0: 最多一次（最快，可能遺失）
+client.publish(topic, message, qos=0)
+
+# QoS 1: 至少一次（較慢，保證送達）
+client.publish(topic, message, qos=1)
+```
+
+**使用持久連接：**
+```python
+# 設定 keep_alive 時間
+client = mqtt.Client()
+client.connect(broker, port, keepalive=60)
+```
+
+### Pico 記憶體優化
+
+**釋放未使用的變數：**
+```python
+import gc
+
+# 執行垃圾回收
+gc.collect()
+
+# 檢查可用記憶體
+print(f"可用記憶體: {gc.mem_free()} bytes")
+```
+
+**減少資料緩衝：**
+```python
+# 立即發送，不累積
+client.publish(topic, message)
+time.sleep(0.1)  # 給予發送時間
+```
+
+---
+
+## 安全性建議
+
+### MQTT 安全
+
+**使用帳號密碼：**
+```python
+client.username_pw_set("username", "password")
+```
+
+**使用 TLS/SSL：**
+```python
+client.tls_set(ca_certs="ca.crt")
+client.connect(broker, 8883)  # 使用 SSL 埠號
+```
+
+### MongoDB 安全
+
+**限制網路存取：**
+```yaml
+# docker-compose.yml
+services:
+  mongodb:
+    ports:
+      - "127.0.0.1:27017:27017"  # 只允許本機存取
+```
+
+**使用強密碼：**
+```bash
+# 修改 MongoDB 密碼
+docker exec -it mongodb mongosh -u admin -p password123
+db.changeUserPassword("admin", "new_strong_password")
+```
+
+### API 安全
+
+**加入 API 金鑰驗證：**
+```python
+from fastapi import Header, HTTPException
+
+async def verify_api_key(x_api_key: str = Header(...)):
+    if x_api_key != "your_secret_key":
+        raise HTTPException(status_code=401, detail="Invalid API Key")
+    return x_api_key
+
+@app.get("/api/data", dependencies=[Depends(verify_api_key)])
+async def get_data():
+    # ...
+```
+
+---
+
+## 監控和日誌
+
+### 系統監控
+
+**監控 CPU 和記憶體：**
+```bash
+# 即時監控
+htop
+
+# 檢查特定程序
+ps aux | grep python3
+```
+
+**監控磁碟空間：**
+```bash
+df -h
+du -sh /var/lib/docker
+```
+
+### 日誌管理
+
+**設定日誌輪替：**
+```python
+import logging
+from logging.handlers import RotatingFileHandler
+
+handler = RotatingFileHandler(
+    'app.log',
+    maxBytes=10*1024*1024,  # 10MB
+    backupCount=5
+)
+logging.basicConfig(handlers=[handler])
+```
+
+**集中日誌查看：**
+```bash
+# 查看所有 Python 程式的日誌
+tail -f *.log
+
+# 使用 journalctl（如果使用 systemd）
+journalctl -u your_service -f
+```
+
+---
+
+## 備份和還原
+
+### 資料庫備份
+
+**手動備份：**
+```bash
+# 備份整個資料庫
+docker exec mongodb mongodump -u admin -p password123 --out /backup
+
+# 複製備份到本機
+docker cp mongodb:/backup ./mongodb_backup_$(date +%Y%m%d)
+```
+
+**自動備份腳本：**
+```bash
+#!/bin/bash
+# backup_mongodb.sh
+
+BACKUP_DIR="/home/pi/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+docker exec mongodb mongodump -u admin -p password123 --out /backup
+docker cp mongodb:/backup "$BACKUP_DIR/mongodb_$DATE"
+
+# 保留最近 7 天的備份
+find "$BACKUP_DIR" -name "mongodb_*" -mtime +7 -exec rm -rf {} \;
+```
+
+### 還原資料庫
+
+```bash
+# 還原備份
+docker cp ./mongodb_backup mongodb:/restore
+docker exec mongodb mongorestore -u admin -p password123 /restore
+```
+
+---
+
+## 常見錯誤代碼
+
+### HTTP 狀態碼
+
+- `200 OK` - 請求成功
+- `400 Bad Request` - 請求格式錯誤
+- `401 Unauthorized` - 未授權
+- `404 Not Found` - 資源不存在
+- `500 Internal Server Error` - 伺服器錯誤
+- `503 Service Unavailable` - 服務暫時無法使用
+
+### MQTT 連接代碼
+
+- `0` - 連接成功
+- `1` - 協議版本錯誤
+- `2` - 客戶端 ID 無效
+- `3` - 伺服器無法使用
+- `4` - 帳號密碼錯誤
+- `5` - 未授權
+
+### MongoDB 錯誤
+
+- `ServerSelectionTimeoutError` - 無法連接到伺服器
+- `DuplicateKeyError` - 重複的鍵值
+- `WriteError` - 寫入錯誤
+- `NetworkTimeout` - 網路逾時
+
+---
+
+## 快速診斷檢查表
+
+### 系統啟動檢查
+
+- [ ] MongoDB 容器正在運行
+- [ ] Mosquitto 服務正在運行
+- [ ] Python 虛擬環境已啟動
+- [ ] 所有必要的套件已安裝
+- [ ] Pico 已連接到 WiFi
+- [ ] Pico 可以連接到 MQTT Broker
+
+### 資料流程檢查
+
+- [ ] Pico 可以讀取感測器資料
+- [ ] Pico 可以發布 MQTT 訊息
+- [ ] Pi 可以接收 MQTT 訊息
+- [ ] 資料可以儲存到 MongoDB
+- [ ] API 可以查詢資料
+- [ ] 儀表板可以顯示資料
+
+### 控制流程檢查
+
+- [ ] 自動化服務正在運行
+- [ ] 規則引擎可以評估條件
+- [ ] 控制命令可以發送
+- [ ] Pico 可以接收控制命令
+- [ ] LED 可以正常控制
+- [ ] 控制歷史有記錄
+
+---
+
 ## 取得協助
 
 如果以上方法都無法解決問題：
 
-1. 檢查日誌檔案
-2. 查看錯誤訊息的完整堆疊追蹤
-3. 搜尋相關錯誤訊息
-4. 詢問講師或同學
-5. 參考官方文件
+1. **檢查日誌檔案** - 查看詳細的錯誤訊息
+2. **查看錯誤堆疊追蹤** - 找出問題發生的位置
+3. **搜尋錯誤訊息** - 在 Google 或 Stack Overflow 搜尋
+4. **檢查版本相容性** - 確認套件版本是否相容
+5. **詢問講師或同學** - 描述問題和已嘗試的解決方法
+6. **參考官方文件** - 查看最新的文件和範例
+
+### 提問技巧
+
+好的問題應該包含：
+- 你想要達成什麼目標
+- 你做了什麼操作
+- 發生了什麼錯誤（完整的錯誤訊息）
+- 你已經嘗試過哪些解決方法
+- 你的環境資訊（作業系統、Python 版本等）
+
+---
 
 ## 參考資源
 
+### 官方文件
+
 - [MicroPython 文件](https://docs.micropython.org/)
+- [Raspberry Pi Pico 文件](https://www.raspberrypi.com/documentation/microcontrollers/)
 - [FastAPI 文件](https://fastapi.tiangolo.com/)
 - [MongoDB 文件](https://docs.mongodb.com/)
 - [MQTT 文件](https://mqtt.org/)
 - [Paho MQTT Python](https://www.eclipse.org/paho/index.php?page=clients/python/index.php)
+
+### 社群資源
+
+- [MicroPython 論壇](https://forum.micropython.org/)
+- [Raspberry Pi 論壇](https://forums.raspberrypi.com/)
+- [Stack Overflow](https://stackoverflow.com/)
+- [GitHub Issues](https://github.com/)
+
+### 學習資源
+
+- [MicroPython 教學](https://docs.micropython.org/en/latest/esp8266/tutorial/index.html)
+- [FastAPI 教學](https://fastapi.tiangolo.com/tutorial/)
+- [MongoDB 大學](https://university.mongodb.com/)
+- [MQTT 入門](https://www.hivemq.com/mqtt-essentials/)
+
+---
+
+**最後更新：** 2025-10-11  
+**版本：** 2.0

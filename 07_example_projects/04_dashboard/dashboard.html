@@ -57,12 +57,21 @@
             </div>
             <div class="update-time" id="updateTime">最後更新：--</div>
         </div>
+
+        <div class="card">
+            <h2>多裝置比較</h2>
+            <div class="chart-container">
+                <canvas id="compareChart"></canvas>
+            </div>
+            <button onclick="loadComparison()" style="margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">載入比較資料</button>
+        </div>
     </div>
 
     <script>
         const UPDATE_INTERVAL = 5000; // 5 秒更新一次
         let currentDevice = 'pico_001';
         let chart = null;
+        let compareChart = null;
 
         // 初始化圖表
         function initChart() {
@@ -76,7 +85,8 @@
                         data: [],
                         borderColor: '#667eea',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        tension: 0.4
+                        tension: 0.4,
+                        fill: true
                     }]
                 },
                 options: {
@@ -84,6 +94,31 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: { beginAtZero: false }
+                    },
+                    plugins: {
+                        legend: { display: true }
+                    }
+                }
+            });
+        }
+
+        // 初始化比較圖表
+        function initCompareChart() {
+            const ctx = document.getElementById('compareChart').getContext('2d');
+            compareChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: false }
+                    },
+                    plugins: {
+                        legend: { display: true, position: 'top' }
                     }
                 }
             });
@@ -165,8 +200,60 @@
             updateData();
         }
 
+        // 載入多裝置比較
+        async function loadComparison() {
+            try {
+                const res = await fetch('/api/compare?hours=6');
+                const data = await res.json();
+                
+                if (data.data) {
+                    const colors = [
+                        '#667eea', '#f093fb', '#4facfe', 
+                        '#43e97b', '#fa709a', '#feca57'
+                    ];
+                    
+                    const datasets = [];
+                    let allLabels = [];
+                    let colorIndex = 0;
+                    
+                    for (const [device, deviceData] of Object.entries(data.data)) {
+                        // 格式化時間標籤
+                        const labels = deviceData.labels.map(t => {
+                            const date = new Date(t);
+                            return date.toLocaleTimeString('zh-TW', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                            });
+                        });
+                        
+                        if (labels.length > allLabels.length) {
+                            allLabels = labels;
+                        }
+                        
+                        datasets.push({
+                            label: device,
+                            data: deviceData.values,
+                            borderColor: colors[colorIndex % colors.length],
+                            backgroundColor: 'transparent',
+                            tension: 0.4
+                        });
+                        
+                        colorIndex++;
+                    }
+                    
+                    compareChart.data.labels = allLabels;
+                    compareChart.data.datasets = datasets;
+                    compareChart.update();
+                }
+            } catch (error) {
+                console.error('載入比較資料失敗:', error);
+                alert('載入比較資料失敗，請確認有多個裝置的資料');
+            }
+        }
+
         // 初始化
         initChart();
+        initCompareChart();
         loadDevices();
         updateData();
         setInterval(updateData, UPDATE_INTERVAL);

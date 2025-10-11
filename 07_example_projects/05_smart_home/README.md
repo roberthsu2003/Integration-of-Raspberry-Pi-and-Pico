@@ -87,11 +87,36 @@ python3 manual_control.py --device pico_001 --action led_on
 - `fan_on` / `fan_off` - 風扇控制（模擬）
 - `heater_on` / `heater_off` - 加熱器控制（模擬）
 
+## 控制歷史查詢
+
+### 查看最近的控制記錄
+```bash
+python3 control_history.py --hours 24 --limit 20
+```
+
+### 查看特定裝置的記錄
+```bash
+python3 control_history.py --device pico_001 --hours 12
+```
+
+### 查看統計資訊
+```bash
+python3 control_history.py --stats --hours 24
+```
+
+### 匯出歷史記錄
+```bash
+python3 control_history.py --export history.json --hours 48
+```
+
 ## 練習題
 
-1. 建立溫度自動控制規則
-2. 實作手動控制功能
-3. 加入控制歷史查詢
+1. ✅ 建立溫度自動控制規則（已完成）
+2. ✅ 實作手動控制功能（已完成）
+3. ✅ 加入控制歷史查詢（已完成）
+4. 加入排程控制（例如：每天 22:00 關閉所有設備）
+5. 實作多條件規則（例如：溫度 > 28 且濕度 > 70）
+6. 建立 Web 控制介面
 
 ## 檢核清單
 

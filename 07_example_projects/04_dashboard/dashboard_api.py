@@ -89,6 +89,51 @@ async def get_devices():
     devices = collection.distinct("device_id")
     return {"status": "success", "devices": devices}
 
+@app.get("/api/stats")
+async def get_statistics(device_id: str = Query("pico_001"), hours: int = Query(24)):
+    """取得統計資訊"""
+    cutoff = datetime.now() - timedelta(hours=hours)
+    data = list(collection.find(
+        {"device_id": device_id, "timestamp": {"$gte": cutoff.isoformat()}},
+        {"_id": 0, "value": 1}
+    ))
+    
+    if not data:
+        return {"status": "success", "stats": None}
+    
+    values = [d["value"] for d in data]
+    return {
+        "status": "success",
+        "stats": {
+            "count": len(values),
+            "avg": sum(values) / len(values),
+            "max": max(values),
+            "min": min(values),
+            "range": max(values) - min(values)
+        }
+    }
+
+@app.get("/api/compare")
+async def compare_devices(hours: int = Query(6)):
+    """比較多個裝置的資料"""
+    cutoff = datetime.now() - timedelta(hours=hours)
+    devices = collection.distinct("device_id")
+    
+    result = {}
+    for device in devices:
+        data = list(collection.find(
+            {"device_id": device, "timestamp": {"$gte": cutoff.isoformat()}},
+            {"_id": 0, "timestamp": 1, "value": 1}
+        ).sort("timestamp", 1).limit(100))
+        
+        if data:
+            result[device] = {
+                "labels": [d["timestamp"] for d in data],
+                "values": [d["value"] for d in data]
+            }
+    
+    return {"status": "success", "data": result}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

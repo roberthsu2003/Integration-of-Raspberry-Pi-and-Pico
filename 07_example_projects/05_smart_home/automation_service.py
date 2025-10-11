@@ -7,6 +7,7 @@ import json
 import logging
 from datetime import datetime
 import paho.mqtt.client as mqtt
+import pymongo
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -18,6 +19,16 @@ class AutomationService:
         self.config = self.load_config(config_file)
         self.last_actions = {}  # 記錄最後執行的動作（用於冷卻）
         self.mqtt_client = None
+        
+        # MongoDB 連接（用於記錄控制歷史）
+        try:
+            self.db_client = pymongo.MongoClient("mongodb://admin:password123@localhost:27017/")
+            self.history_collection = self.db_client["iot_data"]["control_history"]
+            logger.info("已連接到 MongoDB")
+        except Exception as e:
+            logger.warning(f"MongoDB 連接失敗: {e}，將不記錄歷史")
+            self.db_client = None
+            self.history_collection = None
     
     def load_config(self, config_file):
         """載入配置"""
@@ -32,13 +43,26 @@ class AutomationService:
         except:
             return False
     
-    def send_control_command(self, device_id, action):
+    def send_control_command(self, device_id, action, rule_name=None):
         """發送控制命令"""
         topic = self.config['mqtt']['control_topic'].format(device_id=device_id)
-        command = {"action": action, "timestamp": datetime.now().isoformat()}
+        timestamp = datetime.now().isoformat()
+        command = {"action": action, "timestamp": timestamp}
         
         self.mqtt_client.publish(topic, json.dumps(command))
         logger.info(f"✓ 已發送控制命令: {device_id} -> {action}")
+        
+        # 記錄到資料庫
+        if self.history_collection is not None:
+            try:
+                self.history_collection.insert_one({
+                    "device_id": device_id,
+                    "action": action,
+                    "rule_name": rule_name or "unknown",
+                    "timestamp": timestamp
+                })
+            except Exception as e:
+                logger.warning(f"記錄歷史失敗: {e}")
     
     def check_cooldown(self, rule_name, device_id, cooldown):
         """檢查冷卻時間"""
@@ -62,7 +86,7 @@ class AutomationService:
                 
                 if not self.check_cooldown(rule['name'], device_id, cooldown):
                     logger.info(f"🤖 觸發規則: {rule['name']} - {rule['description']}")
-                    self.send_control_command(device_id, rule['action'])
+                    self.send_control_command(device_id, rule['action'], rule['name'])
                     self.last_actions[f"{device_id}_{rule['name']}"] = datetime.now()
                 break
     
@@ -100,6 +124,8 @@ class AutomationService:
             logger.info("\n服務已停止")
         finally:
             self.mqtt_client.disconnect()
+            if self.db_client:
+                self.db_client.close()
 
 if __name__ == "__main__":
     service = AutomationService()
