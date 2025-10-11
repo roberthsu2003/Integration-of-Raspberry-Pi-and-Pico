@@ -205,21 +205,4 @@ A: Pi 端的開發建議在 Raspberry Pi OS 上進行。Pico 的開發可以在�
 
 更多問題請參考 [故障排除指南](resources/troubleshooting.md)
 
-## 📄 授權
 
-本專案採用 [MIT 授權條款](LICENSE)。
-
-## 🤝 貢獻
-
-歡迎貢獻！請查看 [貢獻指南](CONTRIBUTING.md) 了解如何參與專案。
-
-## 📞 支援與回饋
-
-- 📚 查看 [故障排除指南](resources/troubleshooting.md)
-- 👨‍🏫 閱讀 [教師指引](resources/teacher_guide.md)
-- 🐛 提交 [GitHub Issue](https://github.com/your-username/pi-pico-integration/issues)
-- 📝 填寫 [回饋問卷](FEEDBACK.md)
-
----
-
-**祝學習順利！** 🎓🚀
