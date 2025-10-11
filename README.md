@@ -6,8 +6,6 @@
 
 ## 學習目標
 
-完成本課程後，學生將能夠：
-
 - 使用 MicroPython 控制 Raspberry Pi Pico 和讀取內建感測器
 - 使用 FastAPI 建立 RESTful API 服務
 - 使用 Docker 部署 MongoDB 資料庫
@@ -162,19 +160,6 @@ pi-pico-integration/
 
 ## 教學資源
 
-### 給學生
-
-- 每個模組都包含完整的程式碼範例和說明
-- 所有程式碼都有詳細的中文註解
-- 提供練習題和檢核清單
-- 包含常見問題和解決方案
-
-### 給講師
-
-- 詳細的教學指引和時間分配建議
-- 每日教學重點和注意事項
-- 學生能力評量標準
-- 課程調整建議
 
 詳見 [resources/teacher_guide.md](resources/teacher_guide.md)
 
@@ -206,26 +191,4 @@ A: Pi 端的開發建議在 Raspberry Pi OS 上進行。Pico 的開發可以在�
 
 更多問題請參考 [resources/troubleshooting.md](resources/troubleshooting.md)
 
-## 授權
-
-本課程材料採用 MIT 授權。詳見 [LICENSE](LICENSE) 檔案。
-
-## 貢獻
-
-歡迎提出問題、建議或貢獻程式碼。請參考 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 聯絡方式
-
-如有任何問題或建議，請透過以下方式聯絡：
-
-- 提交 Issue
-- 發送 Pull Request
-- 電子郵件：[your-email@example.com]
-
-## 致謝
-
-感謝所有為本課程提供建議和回饋的學生和講師。
-
----
-
-**祝學習愉快！** 🚀
+x
