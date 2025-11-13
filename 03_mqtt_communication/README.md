@@ -12,12 +12,12 @@
 
 2. **[MQTT 基礎概念](#MQTT-基礎概念)**   
 
-3. **[Pico 發布者](pico_publisher/README.md)**
+3. **[Pico](pico/README.md)**
    - WiFi 連接管理
    - MQTT 客戶端實作
    - 感測器資料發布
 
-4. **[Pi 訂閱者](pi_subscriber/README.md)**
+4. **[Pi](pi/README.md)**
    - MQTT 訂閱實作
    - 資料處理和驗證
    - 資料庫整合
