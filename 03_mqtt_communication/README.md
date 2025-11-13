@@ -2,6 +2,116 @@
 
 歡迎來到 MQTT 通訊模組！本模組將教你如何使用 MQTT 協定實現 Pico 和 Pi 之間的通訊。
 
+## 樹莓派安裝MQTT Broker
+在樹莓派 (Raspberry Pi) 上安裝 MQTT 伺服器（通常稱為 MQTT Broker）非常簡單。目前最受歡迎且輕量級的選擇是 Mosquitto。
+
+這是一個完整的步驟指南，教您如何安裝和測試 Mosquitto。
+
+**步驟一：更新您的樹莓派**
+
+在安裝任何新軟體之前，最好先更新您的套件列表和系統：
+
+```bash
+sudo apt update
+sudo apt upgrade -y
+```
+
+**步驟二：安裝 Mosquitto Broker**
+
+您只需要一個命令即可安裝 Mosquitto 伺服器（Broker）：
+
+```bash
+sudo apt install mosquitto -y
+```
+
+**步驟三：安裝 Mosquitto 客戶端工具 (推薦)**
+
+為了方便在樹莓派本機上進行測試，建議您同時安裝客戶端工具。這將提供 mosquitto_pub（發布者）和 mosquitto_sub（訂閱者）這兩個指令：
+
+```bash
+sudo apt install mosquitto-clients -y
+```
+
+**步驟四：啟動並設為開機啟動**
+
+安裝完成後，Mosquitto 服務通常會自動啟動。您可以使用以下指令來確認其狀態：
+
+```bash
+sudo systemctl status mosquitto
+```
+
+如果它沒有在運行 (running)，您可以使用以下指令手動啟動：
+
+```bash
+sudo systemctl start mosquitto
+```
+
+為了確保每次樹莓派重新開機時 Mosquitto 都會自動運行，請執行：
+
+```bash
+sudo systemctl enable mosquitto
+```
+
+**步驟五：測試您的 MQTT Broker**
+
+現在您的 Broker 已經在樹莓派上運行了。我們來測試一下它是否正常工作。您需要開啟兩個終端機視窗連線到您的樹莓派。
+
+**在第一個終端機 (扮演「訂閱者」):**
+
+執行以下指令。它會訂閱一個名為 home/test 的主題 (topic)，並等待訊息：
+
+```bash
+mosquitto_sub -h localhost -t "home/test"
+```
+
+**指令解釋:**
+
+- -h localhost：連接到本機的 Broker。
+
+- -t "home/test"：訂閱名為 "home/test" 的主題。
+
+執行後，這個終端機視窗會停住，等待接收訊息。
+
+**在第二個終端機 (扮演「發布者」):**
+
+執行以下指令。它會發布一則訊息到 home/test 主題：
+
+```bash
+mosquitto_pub -h localhost -t "home/test" -m "Hello Raspberry Pi MQTT"
+```
+
+**指令解釋:**
+
+- -h localhost：連接到本機的 Broker。
+
+- -t "home/test"：發布到名為 "home/test" 的主題。
+
+- -m "..."：您要發送的訊息 (message)。
+
+## 樹莓派安裝MQTTX->GUI介面
+
+這是一個由 EMQ (一家知名的 MQTT Broker 公司) 開發的工具，介面非常現代且乾淨。
+
+- **為什麼推薦它**： 它的介面設計得像一個 API 測試工具 (例如 Postman)，非常適合用來發布（Publish）和訂閱（Subscribe）。您可以儲存多個 Broker 的連線設定，方便切換。
+
+- **運作方式**： 您需要手動新增您想訂閱的主題（例如 home/test 或使用萬用字元 home/# 來訂閱 home 底下的所有主題）。
+
+平台： 支援 Windows, macOS 和 Linux。
+
+----
+
+### MQTTX安裝方式
+
+**下載安裝**
+
+- windows版
+- Mac版
+- Linux
+
+下載網址(https://mqttx.app/)
+
+
+
 ## 模組概覽
 
 本模組包含四個主要單元：
@@ -101,24 +211,6 @@ MQTT 提供三種 QoS 等級：
 | 1 | 至少一次（At least once） | 一般資料 |
 | 2 | 恰好一次（Exactly once） | 重要資料 |
 
-## 快速開始
-
-### 1. 啟動 MQTT Broker
-
-```bash
-cd mqtt_broker
-docker-compose up -d
-```
-
-### 2. 測試 Broker
-
-```bash
-# 終端 1：訂閱
-mosquitto_sub -h localhost -t test
-
-# 終端 2：發布
-mosquitto_pub -h localhost -t test -m "Hello MQTT"
-```
 
 ### 3. 設定 Pico
 
