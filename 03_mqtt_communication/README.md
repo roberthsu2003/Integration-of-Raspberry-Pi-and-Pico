@@ -118,7 +118,7 @@ mosquitto_pub -h localhost -t "home/test" -m "Hello Raspberry Pi MQTT"
 
 ### 📚 學習單元
 
-1. **[MQTT Broker](mqtt_broker/README.md)**
+1. **[MQTT 基礎概念](#MQTT_基礎概念)**
    - MQTT 基本概念
    - Mosquitto Broker 設定
    - 測試和驗證
