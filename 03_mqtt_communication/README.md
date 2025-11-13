@@ -2,6 +2,44 @@
 
 歡迎來到 MQTT 通訊模組！本模組將教你如何使用 MQTT 協定實現 Pico 和 Pi 之間的通訊。
 
+## 模組概覽
+
+本模組包含四個主要單元：
+
+### 📚 學習單元
+
+1. **[樹莓派安裝MQTT Broker和測試軟體](#樹莓派安裝MQTT-Broker)**
+
+2. **[MQTT 基礎概念](#MQTT-基礎概念)**   
+
+3. **[Pico 發布者](pico_publisher/README.md)**
+   - WiFi 連接管理
+   - MQTT 客戶端實作
+   - 感測器資料發布
+
+4. **[Pi 訂閱者](pi_subscriber/README.md)**
+   - MQTT 訂閱實作
+   - 資料處理和驗證
+   - 資料庫整合
+
+5. **[測試工具](mqtt_test_tools/README.md)**
+   - 訊息監控工具
+   - 測試發布工具
+   - 除錯技巧
+
+## 學習目標
+
+完成本模組後，你將能夠：
+
+- ✅ 理解 MQTT 協定的基本概念
+- ✅ 設定和管理 MQTT Broker
+- ✅ 在 Pico 上實作 MQTT 發布者
+- ✅ 在 Pi 上實作 MQTT 訂閱者
+- ✅ 設計合理的主題結構
+- ✅ 處理連接中斷和重連
+- ✅ 測試和除錯 MQTT 通訊
+- ✅ 整合 MQTT 和資料庫
+
 ## 樹莓派安裝MQTT Broker
 在樹莓派 (Raspberry Pi) 上安裝 MQTT 伺服器（通常稱為 MQTT Broker）非常簡單。目前最受歡迎且輕量級的選擇是 Mosquitto。
 
@@ -112,44 +150,7 @@ mosquitto_pub -h localhost -t "home/test" -m "Hello Raspberry Pi MQTT"
 
 
 
-## 模組概覽
 
-本模組包含四個主要單元：
-
-### 📚 學習單元
-
-1. **[MQTT 基礎概念](#MQTT-基礎概念)**
-   - MQTT 基本概念
-   - Mosquitto Broker 設定
-   - 測試和驗證
-
-2. **[Pico 發布者](pico_publisher/README.md)**
-   - WiFi 連接管理
-   - MQTT 客戶端實作
-   - 感測器資料發布
-
-3. **[Pi 訂閱者](pi_subscriber/README.md)**
-   - MQTT 訂閱實作
-   - 資料處理和驗證
-   - 資料庫整合
-
-4. **[測試工具](mqtt_test_tools/README.md)**
-   - 訊息監控工具
-   - 測試發布工具
-   - 除錯技巧
-
-## 學習目標
-
-完成本模組後，你將能夠：
-
-- ✅ 理解 MQTT 協定的基本概念
-- ✅ 設定和管理 MQTT Broker
-- ✅ 在 Pico 上實作 MQTT 發布者
-- ✅ 在 Pi 上實作 MQTT 訂閱者
-- ✅ 設計合理的主題結構
-- ✅ 處理連接中斷和重連
-- ✅ 測試和除錯 MQTT 通訊
-- ✅ 整合 MQTT 和資料庫
 
 ## MQTT 基礎概念
 
